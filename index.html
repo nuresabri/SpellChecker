@@ -1,105 +1,63 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Spell Checker</title>
-  <style>
-    /* Add Google Font */
-    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+<script>
+  let dictionary = [];
 
-    body {
-      margin: 0;
-      font-family: 'Roboto', sans-serif;
-      background: linear-gradient(to right, #f8f9fa, #e9ecef);
-      color: #333;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      text-align: center;
-    }
+  // Load dictionary on page load
+  fetch("dictionary.json")
+    .then(response => response.json())
+    .then(data => {
+      dictionary = data;
+    })
+    .catch(error => console.error("Failed to load dictionary:", error));
 
-    h1 {
-      font-size: 2rem;
-      margin-bottom: 20px;
-    }
+  function computePenalty(word1, word2) {
+    const n = word1.length;
+    const m = word2.length;
+    const dp = Array.from({ length: n + 1 }, () => Array(m + 1).fill(0));
 
-    input[type="text"] {
-      width: 300px;
-      padding: 10px;
-      border: 2px solid #ccc;
-      border-radius: 5px;
-      font-size: 1rem;
-      margin-bottom: 20px;
-    }
+    for (let i = 1; i <= n; i++) dp[i][0] = i * 2;
+    for (let j = 1; j <= m; j++) dp[0][j] = j * 2;
 
-    button {
-      padding: 10px 20px;
-      font-size: 1rem;
-      border: none;
-      border-radius: 5px;
-      background-color: #007bff;
-      color: white;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-
-    button:hover {
-      background-color: #0056b3;
-    }
-
-    .suggestions {
-      margin-top: 20px;
-      padding: 20px;
-      border: 2px solid #007bff;
-      border-radius: 10px;
-      background-color: white;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    .suggestions p {
-      margin: 5px 0;
-      font-size: 1rem;
-      font-weight: bold;
-    }
-  </style>
-</head>
-<body>
-  <h1>Spell Checker</h1>
-  <input type="text" id="wordInput" placeholder="Enter a word">
-  <button onclick="getSuggestions()">Check Suggestions</button>
-  <div id="suggestions" class="suggestions" style="display: none;"></div>
-
-  <script>
-    // Placeholder function for generating suggestions
-    function getSuggestions() {
-      const inputWord = document.getElementById("wordInput").value.trim();
-      const suggestionsContainer = document.getElementById("suggestions");
-
-      if (!inputWord) {
-        suggestionsContainer.style.display = "none";
-        return;
+    for (let i = 1; i <= n; i++) {
+      for (let j = 1; j <= m; j++) {
+        if (word1[i - 1] === word2[j - 1]) {
+          dp[i][j] = dp[i - 1][j - 1];
+        } else {
+          const mismatchPenalty =
+            "aeiou".includes(word1[i - 1]) === "aeiou".includes(word2[j - 1])
+              ? 1
+              : 3;
+          dp[i][j] = Math.min(
+            dp[i - 1][j - 1] + mismatchPenalty,
+            dp[i - 1][j] + 2,
+            dp[i][j - 1] + 2
+          );
+        }
       }
-
-      // Mock suggestions
-      const suggestions = [
-        { word: "example", score: 2 },
-        { word: "sample", score: 3 },
-        { word: "simple", score: 4 },
-        { word: "temple", score: 5 },
-        { word: "ample", score: 6 }
-      ];
-
-      suggestionsContainer.innerHTML = suggestions
-        .map(
-          (suggestion) => `<p>${suggestion.word} (Score: ${suggestion.score})</p>`
-        )
-        .join("");
-
-      suggestionsContainer.style.display = "block";
     }
-  </script>
-</body>
-</html>
+    return dp[n][m];
+  }
+
+  function getSuggestions() {
+    const inputWord = document.getElementById("wordInput").value.trim();
+    const suggestionsContainer = document.getElementById("suggestions");
+
+    if (!inputWord) {
+      suggestionsContainer.style.display = "none";
+      return;
+    }
+
+    const suggestions = dictionary
+      .map(word => ({
+        word,
+        score: computePenalty(inputWord.toLowerCase(), word)
+      }))
+      .sort((a, b) => a.score - b.score)
+      .slice(0, 10);
+
+    suggestionsContainer.innerHTML = suggestions
+      .map(suggestion => `<p>${suggestion.word} (Score: ${suggestion.score})</p>`)
+      .join("");
+    suggestionsContainer.style.display = "block";
+  }
+</script>
+
