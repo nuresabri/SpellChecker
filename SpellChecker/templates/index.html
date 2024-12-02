@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spell Checker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            text-align: center;
+        }
+        input, button {
+            padding: 10px;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Spell Checker</h1>
+    <input type="text" id="word" placeholder="Enter a word">
+    <button onclick="getSuggestions()">Check</button>
+    <h2>Suggestions</h2>
+    <ul id="suggestions"></ul>
+
+    <script>
+        async function getSuggestions() {
+            const word = document.getElementById("word").value;
+            if (!word) {
+                alert("Please enter a word!");
+                return;
+            }
+
+            const response = await fetch("/spellcheck", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ word }),
+            });
+
+            const data = await response.json();
+            const suggestionsList = document.getElementById("suggestions");
+            suggestionsList.innerHTML = "";
+
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+
+            data.suggestions.forEach((suggestion) => {
+                const li = document.createElement("li");
+                li.textContent = `${suggestion.word} (Score: ${suggestion.score})`;
+                suggestionsList.appendChild(li);
+            });
+        }
+    </script>
+</body>
+</html>
