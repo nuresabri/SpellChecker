@@ -7,39 +7,53 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 40px;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #ADD8E6;
         }
+
+        .container {
+            text-align: center;
+            padding: 20px;
+            background-color: white;
+            border: 3px solid black;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
         #results {
             margin-top: 20px;
-        }
-        #suggestions {
-            margin-top: 20px;
-            list-style-type: none;
-            padding: 0;
-        }
-        #suggestions li {
-            margin-bottom: 5px;
         }
     </style>
 </head>
 <body>
-    <h1>Spell Checker</h1>
-    <form>
-        <label for="wordInput">enter a word:</label>
-        <input type="text" id="wordInput" name="wordInput" required>
-        <button type="button" id="submit">check</button>
-    </form>
+    <div class="container">
+        <h1>Spell Checker</h1>
+        <form>
+            <label for="wordInput">Enter a word:</label>
+            <input type="text" id="wordInput" name="wordInput" required>
+            <button type="button" id="submit">Check</button>
+        </form>
 
-    <div id="results">
-        <p id="result"></p>
-        <p id="score"></p>
-    </div>
-
-    <div>
-        <h3>suggestions:</h3>
-        <ul id="suggestions"></ul>
+        <div id="results">
+            <p id="result"></p>
+            <p id="score"></p>
+        </div>
     </div>
 
     <script src="script.js"></script>
 </body>
 </html>
+
