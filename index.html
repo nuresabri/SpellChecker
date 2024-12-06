@@ -1,22 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Spell Checker</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spell Checker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+        }
+        #results {
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
-  <h1>Spell Checker</h1>
-  <form id="spellCheckForm">
-    <label for="wordInput">Enter a word:</label>
-    <input type="text" id="wordInput" name="wordInput" required>
-    <button type="button" onclick="checkWord()">Check</button>
-  </form>
+    <h1>Spell Checker</h1>
+    <form>
+        <label for="wordInput">Enter a word:</label>
+        <input type="text" id="wordInput" name="wordInput" required>
+        <button type="button" id="submit">Check</button>
+    </form>
 
-  <p id="result"></p>
+    <div id="results">
+        <p id="result"></p>
+        <p id="score"></p>
+    </div>
 
-  <script src="script.js"></script>
+    <script src="spellChecker.js"></script>
 </body>
 </html>
+
 
 
