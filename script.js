@@ -1,97 +1,91 @@
-// array to hold dictionary words
 let dictionary = [];
 
-// function to load the dictionary file
 function loadDictionary() {
-    fetch('dictionary.txt')  // load dictionary.txt from the repository
-        .then(response => response.text())  // get the text from the file
+    fetch('dictionary.txt')
+        .then(response => response.text())
         .then(data => {
-            dictionary = data.split('\n').map(word => word.trim().toLowerCase()); // split the file into words
-            console.log("dictionary loaded successfully!");
+            dictionary = data.split('\n').map(word => word.trim().toLowerCase());
+            console.log("Dictionary loaded successfully!");
         })
-        .catch(error => console.error("error loading dictionary:", error));
+        .catch(error => console.error("Error loading dictionary:", error));
 }
 
-// function to check if a character is a vowel
-function isVowel(char) {
+function calculateScore(word1, word2) {
     const vowels = 'aeiou';
-    return vowels.includes(char);
-}
+    const len1 = word1.length;
+    const len2 = word2.length;
+    const dp = Array.from({ length: len1 + 1 }, () => Array(len2 + 1).fill(0));
 
-// function to calculate the penalty score using dynamic programming
-function sequenceAlignment(word1, word2) {
-    const n = word1.length;
-    const m = word2.length;
-    const dp = Array(n + 1).fill(null).map(() => Array(m + 1).fill(0));
+    for (let i = 0; i <= len1; i++) dp[i][0] = i * 2;
+    for (let j = 0; j <= len2; j++) dp[0][j] = j * 2;
 
-    // fill in the base cases for gaps
-    for (let i = 1; i <= n; i++) dp[i][0] = dp[i - 1][0] + 2;  // gap penalty for deletion
-    for (let j = 1; j <= m; j++) dp[0][j] = dp[0][j - 1] + 2;  // gap penalty for insertion
+    for (let i = 1; i <= len1; i++) {
+        for (let j = 1; j <= len2; j++) {
+            let cost = 0;
+            const char1 = word1[i - 1];
+            const char2 = word2[j - 1];
+            const isVowel1 = vowels.includes(char1);
+            const isVowel2 = vowels.includes(char2);
 
-    // loop through the matrix to calculate scores
-    for (let i = 1; i <= n; i++) {
-        for (let j = 1; j <= m; j++) {
-            if (word1[i - 1] === word2[j - 1]) {
-                dp[i][j] = dp[i - 1][j - 1];  // no penalty for exact match
-            } else if ((isVowel(word1[i - 1]) && isVowel(word2[j - 1])) || 
-                       (!isVowel(word1[i - 1]) && !isVowel(word2[j - 1]))) {
-                dp[i][j] = dp[i - 1][j - 1] + 1;  // consonant/consonant or vowel/vowel mismatch
+            if (char1 === char2) {
+                cost = 0;
+            } else if (isVowel1 === isVowel2) {
+                cost = 1;
             } else {
-                dp[i][j] = dp[i - 1][j - 1] + 3;  // vowel/consonant mismatch (penalty 3)
+                cost = 3;
             }
-            dp[i][j] = Math.min(dp[i][j], dp[i - 1][j] + 2);  // gap penalty for deletion
-            dp[i][j] = Math.min(dp[i][j], dp[i][j - 1] + 2);  // gap penalty for insertion
+
+            dp[i][j] = Math.min(
+                dp[i - 1][j - 1] + cost, // substitution
+                dp[i - 1][j] + 2, // gap
+                dp[i][j - 1] + 2 // gap
+            );
         }
     }
 
-    return dp[n][m];
+    return dp[len1][len2];
 }
 
-// function to get the top 10 best suggestions from the dictionary
-function getBestSuggestions(inputWord) {
-    // create an array of words with their penalty scores
-    const scoredWords = dictionary.map(word => {
-        return { word, score: sequenceAlignment(inputWord, word) };
-    });
+function getSuggestions(word) {
+    const scores = dictionary.map(dictWord => ({
+        word: dictWord,
+        score: calculateScore(word, dictWord)
+    }));
 
-    // sort the words by score (lowest first)
-    scoredWords.sort((a, b) => a.score - b.score);
-
-    // return the top 10 words with the lowest score
-    return scoredWords.slice(0, 10);
+    scores.sort((a, b) => a.score - b.score);
+    return scores.slice(0, 10);
 }
 
-// function to update the page with results and suggestions
 function showResults(word) {
-    const resultElement = document.getElementById('result');
     const scoreElement = document.getElementById('score');
+    const resultElement = document.getElementById('result');
     const suggestionsElement = document.getElementById('suggestions');
 
-    // get the top 10 best suggestions based on the entered word
-    const suggestions = getBestSuggestions(word);
-    
-    // display the score and best suggestion
-    scoreElement.innerHTML = `score: ${suggestions[0].score}`;
-    resultElement.innerHTML = `best suggestion: "${suggestions[0].word}"`;
+    const isCorrect = checkWord(word);
+    const score = isCorrect ? 0 : 1;
 
-    // clear previous suggestions
-    suggestionsElement.innerHTML = '';
-    
-    // loop through the top 10 suggestions and add them to the list
-    suggestions.forEach(item => {
-        const li = document.createElement('li');
-        li.textContent = `${item.word} (score: ${item.score})`;
-        suggestionsElement.appendChild(li);
-    });
+    scoreElement.innerHTML = `Score: ${score}`;
+    resultElement.innerHTML = isCorrect ? `Correct: The word "${word}" is in the dictionary.` : `Incorrect: The word "${word}" is not in the dictionary.`;
+
+    const suggestions = getSuggestions(word);
+    suggestionsElement.innerHTML = `
+        <h2>Suggestions:</h2>
+        <ul>
+            ${suggestions.map(item => `<li>${item.word} (Score: ${item.score})</li>`).join('')}
+        </ul>
+    `;
 }
 
-// event listener for when the user submits a word
+function checkWord(word) {
+    const wordLower = word.toLowerCase().trim();
+    return dictionary.includes(wordLower);
+}
+
 document.getElementById('submit').addEventListener('click', function() {
     const word = document.getElementById('wordInput').value;
     showResults(word);
 });
 
-// load the dictionary when the page loads
 window.onload = function() {
     loadDictionary();
 };
