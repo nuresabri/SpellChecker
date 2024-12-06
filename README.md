@@ -1,5 +1,17 @@
 # Spell Checker
 
+# IMPORTANT
+The program works fine, but you may encounter some issues with certain browsers. I had trouble using it on chrome but it began working eventually (did not run into issues running it on edge and firefox, though). If the program is not working as it should, the easiest way to fix it is to just use another browser.
+
+However just in case you would like to run it on chrome and it is not working:
+Go to chrome settings 
+-> Privacy and Security
+-> Security
+-> Scroll all the way down and ensure that "Use secure DNS" is turned off. 
+
+This should solve any issues running the program. 
+
+
 ## Overview
 This project implements a spell checker that suggests the best possible word corrections based on a given input word. It uses dynamic programming to calculate a sequence alignment score between the input word and words in the dictionary. The goal is to provide suggestions for potentially misspelled words using a scoring algorithm that considers consonant/vowel mismatches and gaps.
 
@@ -32,4 +44,3 @@ git clone https://github.com/nuresabri/SpellChecker.git
 cd SpellChecker
 
 c. Now you can open the index.html file and use the program locally.
-
