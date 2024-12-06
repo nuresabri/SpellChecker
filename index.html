@@ -1,125 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spell Checker</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin: 20px;
-        }
-        #output {
-            margin-top: 20px;
-        }
-        input, button {
-            padding: 10px;
-            font-size: 16px;
-        }
-        ul {
-            list-style: none;
-            padding: 0;
-        }
-        li {
-            margin: 5px 0;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spell Checker</title>
 </head>
 <body>
-    <h1>Spell Checker</h1>
-    <p>Enter a word to get suggestions:</p>
-    <input type="text" id="wordInput" placeholder="Type a word...">
-    <button onclick="getSuggestions()">Get Suggestions</button>
-    <div id="output"></div>
+  <h1>Spell Checker</h1>
+  <form id="spellCheckForm">
+    <label for="wordInput">Enter a word:</label>
+    <input type="text" id="wordInput" name="wordInput" required>
+    <button type="button" onclick="checkWord()">Check</button>
+  </form>
 
-    <script>
-        // Helper function to check if a character is a vowel
-        function isVowel(char) {
-            return "aeiou".includes(char.toLowerCase());
-        }
+  <p id="result"></p>
 
-        // Function to compute penalty between two words
-        function computePenalty(word1, word2) {
-            const n = word1.length, m = word2.length;
-            const dp = Array.from({ length: n + 1 }, () => Array(m + 1).fill(0));
-
-            // Initialize DP table
-            for (let i = 1; i <= n; i++) dp[i][0] = i * 2; // Gap penalty
-            for (let j = 1; j <= m; j++) dp[0][j] = j * 2; // Gap penalty
-
-            // Fill DP table
-            for (let i = 1; i <= n; i++) {
-                for (let j = 1; j <= m; j++) {
-                    if (word1[i - 1] === word2[j - 1]) {
-                        dp[i][j] = dp[i - 1][j - 1]; // Match
-                    } else {
-                        // Mismatch penalties
-                        let mismatchPenalty = 3; // Default mismatch
-                        if (isVowel(word1[i - 1]) && isVowel(word2[j - 1])) mismatchPenalty = 1;
-                        if (!isVowel(word1[i - 1]) && !isVowel(word2[j - 1])) mismatchPenalty = 1;
-
-                        dp[i][j] = Math.min(
-                            dp[i - 1][j - 1] + mismatchPenalty, // Replace
-                            dp[i - 1][j] + 2, // Insert gap in word2
-                            dp[i][j - 1] + 2 // Insert gap in word1
-                        );
-                    }
-                }
-            }
-            return dp[n][m];
-        }
-
-        // Function to find the best matches
-        function findBestMatches(inputWord, dictionary) {
-            const scores = dictionary.map(word => ({
-                word: word,
-                score: computePenalty(inputWord, word)
-            }));
-            scores.sort((a, b) => a.score - b.score);
-            return scores.slice(0, 10); // Top 10 matches
-        }
-
-        // Load dictionary (from dictionary.json file)
-        let dictionary = [];
-
-        // Fetch the dictionary.json file
-        fetch('dictionary.json')
-            .then(response => response.json())
-            .then(data => {
-                dictionary = data;
-            })
-            .catch(error => console.error('Error loading dictionary:', error));
-
-        // Function to display suggestions
-        function getSuggestions() {
-            const inputWord = document.getElementById("wordInput").value.trim().toLowerCase();
-            const outputDiv = document.getElementById("output");
-
-            if (!inputWord) {
-                outputDiv.innerHTML = "<p>Please enter a valid word.</p>";
-                return;
-            }
-
-            // Ensure dictionary has been loaded
-            if (dictionary.length === 0) {
-                outputDiv.innerHTML = "<p>Dictionary is still loading, please try again later.</p>";
-                return;
-            }
-
-            const suggestions = findBestMatches(inputWord, dictionary);
-
-            if (suggestions.length === 0) {
-                outputDiv.innerHTML = "<p>No suggestions found.</p>";
-            } else {
-                const listItems = suggestions.map(
-                    ({ word, score }) => `<li>${word} (Score: ${score})</li>`
-                ).join("");
-
-                outputDiv.innerHTML = `<p>Suggestions:</p><ul>${listItems}</ul>`;
-            }
-        }
-    </script>
+  <script src="script.js"></script>
 </body>
 </html>
+
 
